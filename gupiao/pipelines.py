@@ -17,6 +17,7 @@ from gupiao.items import SH_Link, SZ_Link, CYB_Link, Lrb_Info, Company_Info, Zcf
 # https: // stock.xueqiu.com / v5 / stock / finance / cn / balance.json?symbol = SZ300820 & type = Q4 & is_detail = true & count = 5 & timestamp =
 # https: // stock.xueqiu.com / v5 / stock / finance / cn / cash_flow.json?symbol = SZ300820 & type = Q4 & is_detail = true & count = 5 & timestamp =
 
+#将年报链接注入redis数据库
 # 沪市
 def push_lrb_sh(redis_conn, item):
     redis_conn.rpush("job:lrb_link", "https://stock.xueqiu.com/v5/stock/finance/cn/income.json?symbol=SH" + item[
