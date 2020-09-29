@@ -1,0 +1,3 @@
+# Snowball-annual-report-crawler
+使用了scrapy-redis框架实现雪球网上市公司年报的爬虫，使用Mysql进行存储。
+目前还有未解决的bug是在redis读取url时无法添加header，只有在scrapy源码中进行修改。
