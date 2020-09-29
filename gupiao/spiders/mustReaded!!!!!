@@ -1,0 +1,67 @@
+注意在scrapy-redis源代码中修改make_requests_from_url函数，
+在下面添加headers来保证能够跳过登录检测，
+不然爬虫运行失败！！！！！！！！！！！！！
+修改方法在cyb_code中对class spider(scrapy.Spider):中的spide ctrl+b寻找对应函数定义并找到make_requests_from_url对应函数添加即可。
+如下：
+    def make_requests_from_url(self, url):
+        """ This method is deprecated. """
+        warnings.warn(
+            "Spider.make_requests_from_url method is deprecated: "
+            "it will be removed and not be called by the default "
+            "Spider.start_requests method in future Scrapy releases. "
+            "Please override Spider.start_requests method instead."
+        )
+        headers = {
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh-TW;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6',
+            'Connection': 'keep-alive',
+            'Cookie': 'device_id=24700f9f1986800ab4fcc880530dd0ed; s=bv1214rr59; _ga=GA1.2.879653047.1594387410; xq_a_token=4072d5490c8abac330ccb4bf35d39715a0b208c5; xqat=4072d5490c8abac330ccb4bf35d39715a0b208c5; xq_r_token=cfa3a4ecd00a5ff784710d4faebc560f425b93fe; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjk3Nzg3NTYwMzQsImlzcyI6InVjIiwiZXhwIjoxNTk4NTk5NTczLCJjdG0iOjE1OTYwMDc1NzMxOTMsImNpZCI6ImQ5ZDBuNEFadXAifQ.igTa0eJJx05rK9dUZfPZN0amIz2MPnrP15M6fzHv-hBwOaVeuWirf0KZql52Zfi-8sv2R2gD9d5zUayJKBfEPtfgbL1OTJvGFJcJpY4uhJ4hArBD10LquH0G1Vmbwz8MO0n2XGmVxl4ZT0HY-KdH9B2PvIc3_tMMz9sov1tlC98PZVwCbJ1wKbIve6epCvHla04mhDTVhdFwDcI0SSni00KbswMio4yN4UFi_-qH3sRsEsRJsF5s3dDztfXh54JBHkpYp79WzfpSP_N76vfhieFI-KEaN-n2sfc9o6r81y9QaUpjf8JFyQW0tgKaFOrXdS_x-aKv7e2q-MDSllCtCw; xq_is_login=1; u=9778756034; bid=3aa53dcb75c47a3f28f2f8510c436167_kd725iro; Hm_lvt_1db88642e346389874251b5a1eded6e3=1596008294,1596008380,1596008969,1596761710; snbim_minify=true; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1596763938',
+            'Host': 'stock.xueqiu.com',
+            'Origin': 'https://xueqiu.com',
+            'Referer': 'https://xueqiu.com/snowman/S/SH600988/detail',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-site',
+            'User-Agent': '"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1"',
+        }
+        return Request(url, dont_filter=True,headers=headers)
+同时修改start-request中的部分：
+     def start_requests(self):
+        cls = self.__class__
+        if not self.start_urls and hasattr(self, 'start_url'):
+            raise AttributeError(
+                "Crawling could not start: 'start_urls' not found "
+                "or empty (but found 'start_url' attribute instead, "
+                "did you miss an 's'?)")
+        if method_is_overridden(cls, Spider, 'make_requests_from_url'):
+            warnings.warn(
+                "Spider.make_requests_from_url method is deprecated; it "
+                "won't be called in future Scrapy releases. Please "
+                "override Spider.start_requests method instead (see %s.%s)." % (
+                    cls.__module__, cls.__name__
+                ),
+            )
+            for url in self.start_urls:
+                yield self.make_requests_from_url(url)
+        else:
+            headers = {
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'zh-CN,zh-TW;q=0.9,zh;q=0.8,en-US;q=0.7,en;q=0.6',
+                'Connection': 'keep-alive',
+                'Cookie': 'device_id=24700f9f1986800ab4fcc880530dd0ed; s=bv1214rr59; _ga=GA1.2.879653047.1594387410; xq_a_token=4072d5490c8abac330ccb4bf35d39715a0b208c5; xqat=4072d5490c8abac330ccb4bf35d39715a0b208c5; xq_r_token=cfa3a4ecd00a5ff784710d4faebc560f425b93fe; xq_id_token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1aWQiOjk3Nzg3NTYwMzQsImlzcyI6InVjIiwiZXhwIjoxNTk4NTk5NTczLCJjdG0iOjE1OTYwMDc1NzMxOTMsImNpZCI6ImQ5ZDBuNEFadXAifQ.igTa0eJJx05rK9dUZfPZN0amIz2MPnrP15M6fzHv-hBwOaVeuWirf0KZql52Zfi-8sv2R2gD9d5zUayJKBfEPtfgbL1OTJvGFJcJpY4uhJ4hArBD10LquH0G1Vmbwz8MO0n2XGmVxl4ZT0HY-KdH9B2PvIc3_tMMz9sov1tlC98PZVwCbJ1wKbIve6epCvHla04mhDTVhdFwDcI0SSni00KbswMio4yN4UFi_-qH3sRsEsRJsF5s3dDztfXh54JBHkpYp79WzfpSP_N76vfhieFI-KEaN-n2sfc9o6r81y9QaUpjf8JFyQW0tgKaFOrXdS_x-aKv7e2q-MDSllCtCw; xq_is_login=1; u=9778756034; bid=3aa53dcb75c47a3f28f2f8510c436167_kd725iro; Hm_lvt_1db88642e346389874251b5a1eded6e3=1596008294,1596008380,1596008969,1596761710; snbim_minify=true; Hm_lpvt_1db88642e346389874251b5a1eded6e3=1596763938',
+                'Host': 'stock.xueqiu.com',
+                'Origin': 'https://xueqiu.com',
+                'Referer': 'https://xueqiu.com/snowman/S/SH600988/detail',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-site',
+                'User-Agent': '"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1"',
+            }
+            for url in self.start_urls:
+                yield Request(url, dont_filter=True,headers=headers)
+之后再使用scrapy-redis记得修改回来！！！
+之后再使用scrapy-redis记得修改回来！！！
+之后再使用scrapy-redis记得修改回来！！！
+之后再使用scrapy-redis记得修改回来！！！
